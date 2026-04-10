@@ -19,7 +19,14 @@ jobs:
           distribution: temurin
           java-version: '21'
 
+      - name: Show repository structure
+        run: |
+          pwd
+          ls -lah
+          find . -maxdepth 3 -name "pom.xml"
+
       - name: Build with Maven
+        working-directory: ./movie-booking-backend
         run: mvn clean package -DskipTests
 
       - name: Prepare SSH key
