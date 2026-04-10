@@ -42,6 +42,16 @@ jobs:
             sudo systemctl status movie-booking --no-pager
           "
 
-      - name: Health check
+      - name: Health check with retry
         run: |
-          curl -I http://${{ secrets.EC2_HOST }}
+          for i in {1..12}; do
+            echo "Health check attempt $i..."
+            if curl -f -I http://${{ secrets.EC2_HOST }}; then
+              echo "Application is healthy."
+              exit 0
+            fi
+            echo "Application not ready yet, wait 5 seconds..."
+            sleep 5
+          done
+          echo "Health check failed after multiple attempts."
+          exit 1
