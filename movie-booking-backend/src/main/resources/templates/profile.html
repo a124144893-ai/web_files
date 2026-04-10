@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人信息 - 电影预约APP</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .top-bar a, .top-bar button {
+            padding: 8px 14px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .info-list {
+            list-style: none;
+            padding: 0;
+        }
+        .info-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+        }
+        .info-list li span:first-child {
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="top-bar">
+            <div>
+                <a href="/">首页</a>
+                <a href="/bookings" style="margin-left:10px;">我的预约</a>
+            </div>
+            <button id="logoutButton">退出登录</button>
+        </div>
+        <h1>个人信息</h1>
+        <ul class="info-list" id="userInfo">
+            <li><span>用户名</span><span id="username">加载中...</span></li>
+            <li><span>邮箱</span><span id="email">加载中...</span></li>
+            <li><span>手机号</span><span id="phone">加载中...</span></li>
+            <li><span>用户角色</span><span id="role">加载中...</span></li>
+            <li><span>注册时间</span><span id="createdAt">加载中...</span></li>
+        </ul>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/login';
+        }
+
+        document.getElementById('logoutButton').addEventListener('click', () => {
+            localStorage.removeItem('token');
+            window.location.href = '/';
+        });
+
+        async function loadProfile() {
+            try {
+                const response = await fetch('/users/profile', {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    }
+                });
+                if (!response.ok) {
+                    throw new Error('无法获取用户信息');
+                }
+
+                const data = await response.json();
+                document.getElementById('username').textContent = data.username || '-';
+                document.getElementById('email').textContent = data.email || '-';
+                document.getElementById('phone').textContent = data.phone || '-';
+                document.getElementById('role').textContent = data.role || '-';
+                document.getElementById('createdAt').textContent = data.createdAt || '-';
+            } catch (error) {
+                console.error('加载用户信息失败:', error);
+                localStorage.removeItem('token');
+                window.location.href = '/login';
+            }
+        }
+
+        loadProfile();
+    </script>
+</body>
+</html>

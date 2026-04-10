@@ -1,0 +1,9 @@
+@"
+target/
+.idea/
+*.iml
+*.log
+.vscode/
+oracleJdk-21/
+movie-booking-backend/oracleJdk-21/
+"@ | Out-File -Encoding utf8 .gitignore

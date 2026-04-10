@@ -1,0 +1,76 @@
+spring:
+  application:
+    name: movie-booking-app
+  datasource:
+    url: jdbc:mysql://localhost:3306/movie_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&characterEncoding=utf8&useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+        show-sql: false
+        jdbc:
+          batch_size: 20
+          fetch_size: 50
+          use_scrollable_resultset: true
+        use_national_character_variations: true
+    open-in-view: false
+  sql:
+    init:
+      encoding: utf-8
+      mode: always
+      data-locations: classpath:data.sql
+  redis:
+    host: localhost
+    port: 6379
+    timeout: 2000
+    jedis:
+      pool:
+        max-active: 20
+        max-idle: 10
+        min-idle: 5
+
+server:
+  port: 8080
+
+# JWT配置
+jwt:
+  secret: movie-booking-secret-key-change-in-production-environment-please-use-strong-key-at-least-256-bits
+  expiration: 86400000  # 24小时毫秒值
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    com.moviebooking: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/application.log
+    max-size: 10MB
+    max-history: 10
+
+# Springdoc OpenAPI (Swagger UI)
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operations-sorter: method
+    tags-sorter: alpha
+  show-actuator: false
