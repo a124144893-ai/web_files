@@ -45,9 +45,9 @@ jobs:
       - name: Upload Docker Compose files to EC2
         run: |
           scp -o StrictHostKeyChecking=no -i ~/.ssh/ec2_key.pem \
-            ./docker-compose.yml \
-            ./Dockerfile \
-            ./.env \
+            ./deploy/docker-compose.yml \
+            ./deploy/Dockerfile \
+            ./deploy/.env \
             ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/ec2-user/ykm/web_files/
 
       - name: Upload Nginx config to EC2
