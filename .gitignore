@@ -7,3 +7,4 @@ target/
 oracleJdk-21/
 movie-booking-backend/oracleJdk-21/
 "@ | Out-File -Encoding utf8 .gitignore
+src/main/resources/application-local.yml
