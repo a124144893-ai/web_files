@@ -59,6 +59,7 @@
             <button id="logoutButton">退出登录</button>
         </div>
         <h1>个人信息</h1>
+        <div id="errorMessage" style="color:#c00; margin-bottom:16px; display:none;"></div>
         <ul class="info-list" id="userInfo">
             <li><span>用户名</span><span id="username">加载中...</span></li>
             <li><span>邮箱</span><span id="email">加载中...</span></li>
@@ -79,6 +80,12 @@
             window.location.href = '/';
         });
 
+        function showError(message) {
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+        }
+
         async function loadProfile() {
             try {
                 const response = await fetch('/users/profile', {
@@ -87,8 +94,16 @@
                         'Authorization': 'Bearer ' + token
                     }
                 });
+
                 if (!response.ok) {
-                    throw new Error('无法获取用户信息');
+                    if (response.status === 401 || response.status === 403) {
+                        localStorage.removeItem('token');
+                        window.location.href = '/login';
+                        return;
+                    }
+                    const errorText = await response.text().catch(() => '无法获取用户信息');
+                    showError(errorText || '无法获取用户信息');
+                    return;
                 }
 
                 const data = await response.json();
@@ -99,8 +114,7 @@
                 document.getElementById('createdAt').textContent = data.createdAt || '-';
             } catch (error) {
                 console.error('加载用户信息失败:', error);
-                localStorage.removeItem('token');
-                window.location.href = '/login';
+                showError('加载用户信息失败，请稍后重试');
             }
         }
 

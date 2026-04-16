@@ -119,11 +119,7 @@ CREATE TABLE movie_genres (
 
 -- 插入用户数据
 INSERT INTO users (id, avatar_url, created_at, email, password, phone, role, updated_at, username) VALUES
-(1, NULL, '2026-04-06 17:05:39.000000', 'admin@email.com', '$2a$10$GbSFr5TGH0DPKYvvFeySret44EbqFh9yZcvxud1.SC0OoWsSfWNEu', '13800138000', 'ADMIN', '2026-04-06 17:05:39.000000', 'admin'),
-(2, NULL, '2026-04-06 17:05:39.000000', 'lisi@email.com', '$2a$10$GbSFr5TGH0DPKYvvFeySret44EbqFh9yZcvxud1.SC0OoWsSfWNEu', '13800138001', 'USER', '2026-04-06 17:05:39.000000', 'lisi'),
-(3, NULL, '2026-04-06 17:05:39.000000', 'wangwu@email.com', '$2a$10$GbSFr5TGH0DPKYvvFeySret44EbqFh9yZcvxud1.SC0OoWsSfWNEu', '13800138002', 'USER', '2026-04-06 17:05:39.000000', 'wangwu'),
-(4, NULL, '2026-04-06 17:05:39.000000', 'zhaoliu@email.com', '$2a$10$GbSFr5TGH0DPKYvvFeySret44EbqFh9yZcvxud1.SC0OoWsSfWNEu', '13800138003', 'USER', '2026-04-06 17:05:39.000000', 'zhaoliu'),
-(5, NULL, '2026-04-06 08:07:48.867054', 'test@email.com', '$2a$10$GbSFr5TGH0DPKYvvFeySret44EbqFh9yZcvxud1.SC0OoWsSfWNEu', '13900000000', 'USER', '2026-04-06 08:07:48.867054', 'testuser');
+(1, NULL, '2026-04-06 17:05:39.000000', 'admin@email.com', '123456', '13800138000', 'ADMIN', '2026-04-06 17:05:39.000000', 'admin');
 
 -- 插入电影数据
 INSERT INTO movies (id, cast, created_at, description, director, duration_minutes, is_hot, poster_url, rating, release_date, title, updated_at) VALUES

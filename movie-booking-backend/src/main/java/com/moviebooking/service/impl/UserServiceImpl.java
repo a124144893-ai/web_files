@@ -69,7 +69,7 @@ public class UserServiceImpl implements UserService {
                     .role(user.getRole().toString())
                     .build();
         } catch (Exception e) {
-            log.warn("Login failed for user: {}", request.getUsername());
+            log.warn("Login failed for user: {}, cause: {}", request.getUsername(), e.toString());
             throw new BusinessException("LOGIN_FAILED", "用户名或密码错误");
         }
     }
