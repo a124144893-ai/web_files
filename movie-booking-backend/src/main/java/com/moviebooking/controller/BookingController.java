@@ -13,12 +13,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 import java.util.List;
 
-@RestController
+@Controller
 @RequestMapping("/bookings")
 @Tag(name = "电影预约", description = "电影预约相关接口")
 @Slf4j
@@ -29,6 +30,11 @@ public class BookingController {
     @Autowired
     public BookingController(BookingService bookingService) {
         this.bookingService = bookingService;
+    }
+
+    @GetMapping
+    public String viewBookingsPage() {
+        return "bookings";
     }
 
     @PostMapping

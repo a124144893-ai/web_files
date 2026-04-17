@@ -26,18 +26,26 @@
         .tabs {
             display: flex;
             margin-bottom: 30px;
+            border-bottom: 1px solid #ced4da;
         }
         .tab {
             flex: 1;
             padding: 10px;
-            background: #f8f9fa;
-            border: none;
+            background: #e9ecef;
+            border: 1px solid #ced4da;
+            border-bottom: none;
             cursor: pointer;
             font-size: 16px;
+            color: #333;
+            transition: background-color 0.2s ease;
+        }
+        .tab:hover {
+            background: #d0e2ff;
         }
         .tab.active {
             background: #007bff;
             color: white;
+            border-color: #007bff;
         }
         .form-group {
             margin-bottom: 20px;

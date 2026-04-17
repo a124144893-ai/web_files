@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>电影详情 - 电影预约APP</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .top-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .action-btn {
+            padding: 8px 14px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+        }
+        .action-btn.hidden {
+            display: none;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .movie-header {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            background: white;
+            padding: 24px;
+            border-radius: 10px;
+            box-shadow: 0 2px 14px rgba(0,0,0,0.08);
+            margin-bottom: 24px;
+        }
+        .movie-header .poster {
+            flex: 0 0 220px;
+            min-height: 330px;
+            background-color: #ddd;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 14px;
+        }
+        .movie-info {
+            flex: 1;
+            min-width: 280px;
+        }
+        .movie-title {
+            font-size: 32px;
+            margin: 0 0 10px;
+        }
+        .movie-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+        .movie-meta span {
+            font-size: 14px;
+            color: #555;
+        }
+        .status-chip {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 8px 14px;
+            background-color: #e9f7ef;
+            color: #216b3d;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        .section-title {
+            margin: 0 0 14px;
+            font-size: 20px;
+            color: #333;
+        }
+        .overview {
+            line-height: 1.8;
+            color: #555;
+        }
+        .showtime-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .showtime-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            background: white;
+            padding: 18px 20px;
+            border-radius: 10px;
+            box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+        }
+        .showtime-row > div {
+            flex: 1;
+            min-width: 140px;
+            color: #333;
+        }
+        .showtime-row .showtime-label {
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        .showtime-row .showtime-value {
+            color: #555;
+        }
+        .showtime-action {
+            flex: 0 0 160px;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .book-showtime-btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            color: white;
+            background-color: #28a745;
+        }
+        .book-showtime-btn.disabled {
+            background-color: #999;
+            cursor: default;
+        }
+        .message-box {
+            background: #fff9e6;
+            border: 1px solid #ffe5b4;
+            color: #7a5d00;
+            padding: 16px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-actions">
+        <a href="/" class="action-btn">首页</a>
+        <a href="/bookings" class="action-btn">我的订单</a>
+        <a href="/profile" class="action-btn">个人信息</a>
+        <button id="logoutButton" class="action-btn hidden">退出登录</button>
+    </div>
+
+    <div class="container">
+        <div id="statusMessage" class="message-box hidden"></div>
+        <div id="movieContainer"></div>
+        <div id="showtimeSection"></div>
+    </div>
+
+    <script th:inline="none">
+        function getQueryParam(name) {
+            const params = new URLSearchParams(window.location.search);
+            return params.get(name);
+        }
+
+        function formatDateTime(value) {
+            return value ? new Date(value).toLocaleString('zh-CN', {
+                year: 'numeric', month: '2-digit', day: '2-digit',
+                hour: '2-digit', minute: '2-digit'
+            }) : '-';
+        }
+
+        function setMessage(text) {
+            const box = document.getElementById('statusMessage');
+            box.textContent = text;
+            box.classList.remove('hidden');
+        }
+
+        function hideMessage() {
+            document.getElementById('statusMessage').classList.add('hidden');
+        }
+
+        function updateHeaderActions() {
+            const token = localStorage.getItem('token');
+            const logoutButton = document.getElementById('logoutButton');
+            if (token) {
+                logoutButton.classList.remove('hidden');
+            } else {
+                logoutButton.classList.add('hidden');
+            }
+        }
+
+        document.getElementById('logoutButton').addEventListener('click', function() {
+            localStorage.removeItem('token');
+            window.location.href = '/';
+        });
+
+        async function loadMovieDetail() {
+            const movieId = getQueryParam('id');
+            if (!movieId) {
+                document.getElementById('movieContainer').innerHTML = '<p>未找到电影ID，请返回首页选择一部电影。</p>';
+                return;
+            }
+
+            const token = localStorage.getItem('token');
+            const headers = { 'Content-Type': 'application/json' };
+            if (token) headers['Authorization'] = 'Bearer ' + token;
+
+            try {
+                const [movieResponse, showtimesResponse] = await Promise.all([
+                    fetch(`/movies/${movieId}`, { headers }),
+                    fetch(`/movies/${movieId}/showtimes`, { headers })
+                ]);
+
+                if (!movieResponse.ok) {
+                    throw new Error('无法加载电影详情');
+                }
+                if (!showtimesResponse.ok) {
+                    throw new Error('无法加载电影场次');
+                }
+
+                const movie = await movieResponse.json();
+                const showtimes = await showtimesResponse.json();
+
+                let bookedShowtimeIds = new Set();
+                if (token) {
+                    const bookingsResponse = await fetch('/bookings/my?pageNum=1&pageSize=100', { headers });
+                    if (bookingsResponse.ok) {
+                        const bookingsData = await bookingsResponse.json();
+                        const booked = (bookingsData.content || []).filter(item => item.movieId === movie.id);
+                        bookedShowtimeIds = new Set(booked.map(item => item.showtimeId));
+                    }
+                }
+
+                const alreadyBookedMovie = bookedShowtimeIds.size > 0;
+                renderMovie(movie, showtimes, bookedShowtimeIds, alreadyBookedMovie, token);
+            } catch (error) {
+                console.error(error);
+                document.getElementById('movieContainer').innerHTML = '<p>加载电影详情失败，请稍后重试。</p>';
+            }
+        }
+
+        function renderMovie(movie, showtimes, bookedShowtimeIds, alreadyBookedMovie, token) {
+            hideMessage();
+            document.getElementById('movieContainer').innerHTML = `
+                <div class="movie-header">
+                    <div class="poster">电影海报位置</div>
+                    <div class="movie-info">
+                        <h1 class="movie-title">${movie.title || '未知电影'}</h1>
+                        <div class="movie-meta">
+                            <span>导演：${movie.director || '未知'}</span>
+                            <span>主演：${movie.cast || '暂无'}</span>
+                            <span>时长：${movie.duration ? movie.duration + ' 分钟' : '暂无'}</span>
+                            <span>评分：${movie.rating != null ? movie.rating.toFixed(1) : '暂无'}</span>
+                            <span>上映日期：${movie.releaseDate || '暂无'}</span>
+                        </div>
+                        <div class="status-chip">${alreadyBookedMovie ? '已预约' : '未预约'}</div>
+                        <p class="overview">${movie.description || '暂无电影简介。'}</p>
+                    </div>
+                </div>
+            `;
+
+            const showtimeSection = document.getElementById('showtimeSection');
+            if (!showtimes || showtimes.length === 0) {
+                showtimeSection.innerHTML = '<div class="message-box">当前电影暂无可预约场次。</div>';
+                return;
+            }
+
+            showtimeSection.innerHTML = `
+                <h2 class="section-title">场次列表</h2>
+                <div class="showtime-list" id="showtimeList"></div>
+            `;
+
+            const showtimeList = document.getElementById('showtimeList');
+            showtimeList.innerHTML = showtimes.map(showtime => {
+                const booked = bookedShowtimeIds.has(showtime.id);
+                const soldOut = showtime.availableSeats === 0;
+                const buttonText = soldOut ? '已售罄' : '查看详情';
+                const buttonClass = booked || soldOut ? 'book-showtime-btn disabled' : 'book-showtime-btn';
+                return `
+                    <div class="showtime-row">
+                        <div>
+                            <div class="showtime-label">放映时间</div>
+                            <div class="showtime-value">${formatDateTime(showtime.startTime)}</div>
+                        </div>
+                        <div>
+                            <div class="showtime-label">影厅</div>
+                            <div class="showtime-value">${showtime.cinemaHall || '-'}</div>
+                        </div>
+                        <div>
+                            <div class="showtime-label">剩余座位</div>
+                            <div class="showtime-value">${showtime.availableSeats != null ? showtime.availableSeats : '-'}</div>
+                        </div>
+                        <div>
+                            <div class="showtime-label">单价</div>
+                            <div class="showtime-value">${showtime.price != null ? '¥' + showtime.price.toFixed(2) : '-'}</div>
+                        </div>
+                        <div class="showtime-action">
+                            <button class="${buttonClass}" data-showtime-id="${showtime.id}" ${booked || soldOut ? 'disabled' : ''}>${buttonText}</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            showtimeList.querySelectorAll('.book-showtime-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const showtimeId = button.getAttribute('data-showtime-id');
+                    if (!token) {
+                        window.location.href = '/login';
+                        return;
+                    }
+                    if (button.classList.contains('disabled')) {
+                        return;
+                    }
+                    window.location.href = `/payment?movieId=${movie.id}&showtimeId=${showtimeId}`;
+                });
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateHeaderActions();
+            loadMovieDetail();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>支付页面 - 电影预约APP</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.1);
+        }
+        .top-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .action-btn {
+            padding: 8px 14px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+        }
+        .title {
+            margin-top: 0;
+            font-size: 26px;
+        }
+        .notice {
+            margin-top: 20px;
+            padding: 18px;
+            border-radius: 10px;
+            background-color: #fff4f0;
+            color: #8a3d21;
+            border: 1px solid #f3c2b7;
+        }
+        .info-list {
+            margin-top: 20px;
+            line-height: 1.8;
+            color: #444;
+        }
+        .info-list strong {
+            display: inline-block;
+            width: 110px;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-actions">
+        <a href="/" class="action-btn">首页</a>
+        <a href="/bookings" class="action-btn">我的订单</a>
+        <a href="/movie" class="action-btn">电影详情</a>
+    </div>
+    <div class="container">
+        <h1 class="title">付款页面（暂未实现）</h1>
+        <div class="notice">
+            当前支付功能仅为占位页面。后续可在此页面继续完成订单确认、支付信息和支付流程。
+        </div>
+        <div id="paymentInfo" class="info-list"></div>
+    </div>
+    <script th:inline="none">
+        function getQueryParam(name) {
+            const params = new URLSearchParams(window.location.search);
+            return params.get(name);
+        }
+
+        function formatInfo(key, value) {
+            return `<div><strong>${key}:</strong> ${value || '-'}</div>`;
+        }
+
+        function loadPaymentInfo() {
+            const movieId = getQueryParam('movieId');
+            const showtimeId = getQueryParam('showtimeId');
+            const info = document.getElementById('paymentInfo');
+            info.innerHTML = '';
+            info.innerHTML += formatInfo('电影ID', movieId);
+            info.innerHTML += formatInfo('场次ID', showtimeId);
+            info.innerHTML += formatInfo('提示', '此处展示预约信息摘要，当前支付流程尚未实现。');
+        }
+
+        document.addEventListener('DOMContentLoaded', loadPaymentInfo);
+    </script>
+</body>
+</html>

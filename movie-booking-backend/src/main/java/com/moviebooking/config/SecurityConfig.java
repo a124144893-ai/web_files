@@ -61,9 +61,9 @@ public class SecurityConfig {
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/login", "/register", "/profile", "/bookings").permitAll()
+                        .requestMatchers("/", "/login", "/register", "/profile", "/bookings", "/movie", "/payment").permitAll()
                         .requestMatchers("/users/login", "/users/register").permitAll()
-                        .requestMatchers("/movies/hot", "/movies/{id}").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/movies", "/movies/hot", "/movies/*", "/movies/*/showtimes").permitAll()
                         .requestMatchers("/search/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                         .requestMatchers(HttpMethod.GET, "/bookings/movie/*/showtimes").permitAll()

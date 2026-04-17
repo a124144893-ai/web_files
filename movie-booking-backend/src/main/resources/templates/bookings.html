@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的预约 - 电影预约APP</title>
+    <title>我的订单 - 电影预约APP</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -16,35 +16,96 @@
             margin: 0 auto;
             background: white;
             padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            box-shadow: 0 2px 14px rgba(0,0,0,0.08);
         }
         .top-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
+            gap: 12px;
+            flex-wrap: wrap;
         }
         .top-bar a, .top-bar button {
-            padding: 8px 14px;
+            padding: 10px 16px;
             background-color: #007bff;
             color: white;
             text-decoration: none;
             border: none;
-            border-radius: 5px;
+            border-radius: 6px;
             cursor: pointer;
+            font-size: 14px;
         }
-        .booking-table {
-            width: 100%;
-            border-collapse: collapse;
+        .booking-card {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            border: 1px solid #e8eaf6;
+            border-radius: 12px;
+            background: #ffffff;
+            padding: 22px;
+            margin-bottom: 18px;
+            box-shadow: 0 1px 8px rgba(0,0,0,0.05);
         }
-        .booking-table th, .booking-table td {
-            padding: 12px 10px;
-            border: 1px solid #eee;
-            text-align: left;
+        .booking-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
         }
-        .booking-table th {
-            background-color: #f8f9fa;
+        .booking-title-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .booking-title {
+            margin: 0;
+            font-size: 20px;
+            color: #222;
+        }
+        .booking-status {
+            padding: 8px 14px;
+            border-radius: 20px;
+            background-color: #f0f0f0;
+            color: #555;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        .detail-link {
+            display: inline-block;
+            padding: 10px 16px;
+            background-color: #f0f0f0;
+            color: #333;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: background-color 0.2s ease;
+        }
+        .detail-link:hover {
+            background-color: #e0e0e0;
+        }
+        .booking-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+        }
+        .booking-item {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            color: #555;
+        }
+        .booking-item span:first-child {
+            font-weight: 600;
+            color: #333;
+        }
+        .detail-link {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: 600;
         }
         .empty-message {
             padding: 30px;
@@ -58,15 +119,15 @@
         <div class="top-bar">
             <div>
                 <a href="/">首页</a>
-                <a href="/profile" style="margin-left:10px;">个人信息</a>
+                <a href="/profile">个人信息</a>
             </div>
             <button id="logoutButton">退出登录</button>
         </div>
-        <h1>我的预约</h1>
+        <h1>我的订单</h1>
         <div id="bookingContainer"></div>
     </div>
 
-    <script>
+    <script th:inline="none">
         const token = localStorage.getItem('token');
         if (!token) {
             window.location.href = '/login';
@@ -78,7 +139,10 @@
         });
 
         function formatDate(dateString) {
-            return dateString ? new Date(dateString).toLocaleString() : '-';
+            return dateString ? new Date(dateString).toLocaleString('zh-CN', {
+                year: 'numeric', month: '2-digit', day: '2-digit',
+                hour: '2-digit', minute: '2-digit'
+            }) : '-';
         }
 
         async function loadBookings() {
@@ -100,38 +164,25 @@
                     return;
                 }
 
-                container.innerHTML = `
-                    <table class="booking-table">
-                        <thead>
-                            <tr>
-                                <th>预约编号</th>
-                                <th>电影名称</th>
-                                <th>放映时间</th>
-                                <th>影厅</th>
-                                <th>座位数量</th>
-                                <th>座位信息</th>
-                                <th>总价</th>
-                                <th>状态</th>
-                                <th>预约时间</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${data.content.map(booking => `
-                                <tr>
-                                    <td>${booking.id || '-'}</td>
-                                    <td>${booking.movieTitle || '-'}</td>
-                                    <td>${formatDate(booking.showtimeStart)}</td>
-                                    <td>${booking.cinemaHall || '-'}</td>
-                                    <td>${booking.seatCount || '-'}</td>
-                                    <td>${booking.seatNumbers || '-'}</td>
-                                    <td>${booking.totalPrice != null ? '¥' + booking.totalPrice.toFixed(2) : '-'}</td>
-                                    <td>${booking.status || '-'}</td>
-                                    <td>${formatDate(booking.bookingTime)}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                `;
+                container.innerHTML = data.content.map(booking => `
+                    <div class="booking-card">
+                        <div class="booking-header">
+                            <div class="booking-title-row">
+                                <h2 class="booking-title">${booking.movieTitle || '未知电影'}</h2>
+                                <span class="booking-status">${booking.status || '未知状态'}</span>
+                            </div>
+                            <a class="detail-link" href="/movie?id=${booking.movieId}">查看电影详情</a>
+                        </div>
+                        <div class="booking-details">
+                            <div class="booking-item"><span>放映时间</span><span>${formatDate(booking.showtimeStart)}</span></div>
+                            <div class="booking-item"><span>影厅</span><span>${booking.cinemaHall || '-'}</span></div>
+                            <div class="booking-item"><span>座位数量</span><span>${booking.seatCount || '-'}</span></div>
+                            <div class="booking-item"><span>座位信息</span><span>${booking.seatNumbers || '-'}</span></div>
+                            <div class="booking-item"><span>总价</span><span>${booking.totalPrice != null ? '¥' + booking.totalPrice.toFixed(2) : '-'}</span></div>
+                            <div class="booking-item"><span>预约时间</span><span>${formatDate(booking.bookingTime)}</span></div>
+                        </div>
+                    </div>
+                `).join('');
             } catch (error) {
                 console.error('加载预约记录失败:', error);
                 document.getElementById('bookingContainer').innerHTML = '<div class="empty-message">加载预约记录失败，请稍后重试。</div>';

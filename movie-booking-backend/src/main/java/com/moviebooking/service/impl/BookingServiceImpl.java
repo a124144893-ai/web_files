@@ -155,6 +155,7 @@ public class BookingServiceImpl implements BookingService {
         return BookingResponse.builder()
                 .id(booking.getId())
                 .movieId(booking.getShowtime().getMovie().getId())
+                .showtimeId(booking.getShowtime().getId())
                 .movieTitle(booking.getShowtime().getMovie().getTitle())
                 .showtimeStart(booking.getShowtime().getStartTime())
                 .cinemaHall(booking.getShowtime().getCinemaHall())

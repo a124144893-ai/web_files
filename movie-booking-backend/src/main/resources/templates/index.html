@@ -80,6 +80,31 @@
         .book-btn:hover {
             background-color: #218838;
         }
+        .booked-btn {
+            padding: 8px 16px;
+            background-color: #6c757d;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: default;
+        }
+        .movie-status {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .movie-status.booked {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        .movie-status.unbooked {
+            background: #f0f0f0;
+            color: #555;
+        }
         .top-actions {
             position: absolute;
             top: 20px;
@@ -113,12 +138,12 @@
         <div id="welcomeText" class="welcome-text"></div>
         <a href="/login" id="authButton" class="action-btn">登录/注册</a>
         <a href="/profile" id="profileButton" class="action-btn hidden">个人信息</a>
-        <a href="/bookings" id="bookingsButton" class="action-btn hidden">我的预约</a>
+        <a href="/bookings" id="bookingsButton" class="action-btn hidden">我的订单</a>
         <button id="logoutButton" class="action-btn hidden">退出登录</button>
     </div>
 
     <div class="header">
-        <h1>欢迎来到电影预约APP</h1>
+        <h1>欢迎来到电影预约</h1>
         <p>探索热门电影，轻松预约观影</p>
     </div>
 
@@ -126,37 +151,58 @@
         <!-- 电影卡片将通过JavaScript动态加载 -->
     </div>
 
-    <script>
+    <script th:inline="none">
         async function loadHotMovies() {
             try {
-                        const token = localStorage.getItem('token');
+                const token = localStorage.getItem('token');
                 const headers = { 'Content-Type': 'application/json' };
                 if (token) {
                     headers['Authorization'] = 'Bearer ' + token;
                 }
 
-                const response = await fetch('/movies/hot', { headers });
-                if (!response.ok) {
+                const moviesResponse = await fetch('/movies/hot', { headers });
+                if (!moviesResponse.ok) {
                     throw new Error('无法加载热门电影');
                 }
-                const movies = await response.json();
+                const movies = await moviesResponse.json();
+
+                let bookedMovieIds = new Set();
+                if (token) {
+                    try {
+                        const bookingsResponse = await fetch('/bookings/my?pageNum=1&pageSize=100', { headers });
+                        if (bookingsResponse.ok) {
+                            const bookingData = await bookingsResponse.json();
+                            const bookedMovies = bookingData.content || [];
+                            bookedMovieIds = new Set(bookedMovies.map(booking => booking.movieId));
+                        }
+                    } catch (error) {
+                        console.warn('无法加载用户预约状态:', error);
+                    }
+                }
 
                 const movieGrid = document.getElementById('movieGrid');
-                movieGrid.innerHTML = movies.map(movie => `
-                    <div class="movie-card">
-                        <div class="movie-image">
-                            [电影海报位置]
-                        </div>
-                        <div class="movie-info">
-                            <div class="movie-title">${movie.title}</div>
-                            <div class="movie-description">${movie.description || '暂无描述'}</div>
-                            <div class="movie-details">
-                                <span>评分: ${movie.rating || '暂无'}</span>
-                                <a href="${token ? '/bookings' : '/login'}" class="book-btn" ${token ? '' : 'onclick="alert(\'请先登录后再预约\')"'}>${token ? '我的预约' : '预约'}</a>
+                movieGrid.innerHTML = movies.map(movie => {
+                    const alreadyBooked = token && bookedMovieIds.has(movie.id);
+                    const actionLabel = '查看详情';
+                    const actionClass = 'book-btn';
+                    const statusClass = alreadyBooked ? 'booked' : 'unbooked';
+                    return `
+                        <div class="movie-card">
+                            <div class="movie-image">
+                                [电影海报位置]
+                            </div>
+                            <div class="movie-info">
+                                <div class="movie-title">${movie.title}</div>
+                                <div class="movie-description">${movie.description || '暂无描述'}</div>
+                                <div class="movie-status ${statusClass}">${alreadyBooked ? '已预约' : '未预约'}</div>
+                                <div class="movie-details">
+                                    <span>评分: ${movie.rating || '暂无'}</span>
+                                    <a href="/movie?id=${movie.id}" class="${actionClass}">${actionLabel}</a>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                `).join('');
+                    `;
+                }).join('');
             } catch (error) {
                 console.error('加载电影失败:', error);
                 document.getElementById('movieGrid').innerHTML = '<p>加载电影失败，请稍后重试</p>';

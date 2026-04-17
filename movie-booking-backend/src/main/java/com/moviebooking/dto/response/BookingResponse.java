@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 public class BookingResponse {
     private Long id;
     private Long movieId;
+    private Long showtimeId;
     private String movieTitle;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime showtimeStart;
