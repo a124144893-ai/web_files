@@ -1,6 +1,5 @@
 services:
   movie-booking-app:
-    build: .
     image: ${IMAGE_NAME}
     container_name: ${CONTAINER_NAME}
     restart: unless-stopped
@@ -8,6 +7,7 @@ services:
       - "${HOST_PORT}:${CONTAINER_PORT}"
     volumes:
       - ${CONFIG_FILE}:/app/application-prod.yml:ro
+    command: ["--spring.profiles.active=prod", "--spring.config.location=/app/application-prod.yml"]
   nginx:
     image: nginx:latest
     container_name: movie-booking-nginx
